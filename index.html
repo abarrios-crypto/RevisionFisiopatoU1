@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fisiopatología: Manual Interactivo</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Configuración de fuentes serif para emular el estilo de libro */
+        html {
+            font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+        }
+        /* Definición de colores de la marca (Larousse style: Rojo principal) */
+        .larousse-red {
+            background-color: #C30732; /* Un rojo fuerte y vibrante */
+        }
+        .larousse-text-red {
+            color: #C30732;
+        }
+        /* Estilo para el contenedor principal simulando el margen del libro */
+        #book-page-container {
+            border: 1px solid #ddd; /* Borde suave para simular el papel */
+            background-color: #ffffff; 
+            padding: 2rem; /* Espaciado interno de margen */
+            min-height: 70vh; /* Asegura que la "página" tenga altura */
+            position: relative;
+            overflow: hidden; /* Oculta las páginas que no se muestran */
+        }
+        /* Contenedor de las páginas: permite desplazamiento horizontal */
+        #pages-wrapper {
+            display: flex;
+            width: 100%;
+            transition: transform 0.5s ease-in-out; /* Transición para el efecto de "hojear" */
+        }
+        /* Cada pregunta es una "página" de libro */
+        .page-item {
+            flex-shrink: 0; /* Evita que las páginas se encojan */
+            width: 100%;
+        }
+
+        /* Estilo para los bloques de contenido */
+        .content-block {
+            box-shadow: none; 
+            border-radius: 0;
+            border: none;
+            padding-top: 1.5rem;
+            padding-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 sm:p-8">
+    <div id="app" class="max-w-4xl mx-auto shadow-xl">
+        
+        <!-- Contenedor Principal con estilo de página de libro -->
+        <div id="book-page-container">
+            <!-- Header al estilo Larousse -->
+            <header class="text-center mb-10 border-b-4 border-black pb-4">
+                <h1 class="text-4xl sm:text-5xl font-extrabold larousse-text-red tracking-tight leading-none">
+                    FISIOPATOLOGÍA INTERACTIVA
+                </h1>
+                <h2 class="text-xl sm:text-2xl font-bold italic mt-2 text-gray-800">
+                    Revisión por Casos y Conceptos Clave
+                </h2>
+                <p class="text-sm mt-1 text-gray-600">Revisión reflexiva de conceptos clave</p>
+            </header>
+
+            <!-- Contenedor del Carrusel (Paginación) -->
+            <div id="pages-wrapper">
+                <!-- Las preguntas se inyectarán aquí por JavaScript -->
+            </div>
+            
+            <!-- Indicador de página -->
+            <div id="page-indicator" class="text-center text-lg font-bold mt-6 larousse-text-red"></div>
+
+        </div>
+
+        <!-- Controles de Navegación del Libro (Fuera del margen de página) -->
+        <div class="flex justify-between mt-4 space-x-4">
+            <button id="prev-btn" class="flex-1 flex items-center justify-center p-3 text-lg font-bold rounded-lg larousse-text-red border-2 border-red-500 bg-white hover:bg-red-50 transition duration-150 shadow-md disabled:opacity-50" disabled>
+                <svg class="w-5 h-5 mr-2 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                Página Anterior
+            </button>
+            <button id="next-btn" class="flex-1 flex items-center justify-center p-3 text-lg font-bold rounded-lg larousse-text-red border-2 border-red-500 bg-white hover:bg-red-50 transition duration-150 shadow-md">
+                Página Siguiente
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Definición de datos con argumentos completos, clave y opciones
+        const questionsData = [
+            {
+                q: "Un paciente con diagnóstico de cirrosis hepática presenta acumulación de líquido en el abdomen (ascitis) y niveles bajos de albúmina en la sangre. ¿Cuál de los siguientes fundamentos fisiopatológicos explica la causa subyacente de estas manifestaciones clínicas?",
+                options: {
+                    a: "Una alteración en el metabolismo lipídico que aumenta la filtración de proteínas.",
+                    b: "El aumento en la síntesis de proteínas plasmáticas que causa retención de líquidos.",
+                    c: "La insuficiencia hepática que causa una reducción en la producción de proteínas, como la albúmina.", 
+                    d: "La acidosis metabólica causada por la incapacidad del hígado para neutralizar toxinas."
+                },
+                key: "c",
+                feedback: {
+                    correct: "La cirrosis hepática implica la destrucción progresiva del tejido funcional del hígado. El hígado es el principal sitio de síntesis de la **albúmina**, crucial para mantener la **presión oncótica** (o coloidosmótica). La insuficiencia hepática resulta en **hipoalbuminemia**, lo que reduce la presión oncótica, permitiendo que el líquido (plasma) se filtre fuera de los vasos sanguíneos hacia el espacio peritoneal, causando la ascitis.",
+                    incorrect: [
+                        { opt: "a", reason: "La ascitis y la hipoalbuminemia son primariamente alteraciones de la presión oncótica y la síntesis proteica, no del metabolismo lipídico." },
+                        { opt: "b", reason: "Esto es lo opuesto; la síntesis de proteínas plasmáticas *disminuye* en la insuficiencia hepática crónica." },
+                        { opt: "d", reason: "Si bien la acidosis puede ocurrir en la cirrosis avanzada, no es el mecanismo primario que causa la ascitis por hipoalbuminemia." }
+                    ]
+                }
+            },
+            {
+                q: "Un médico sospecha que un paciente sufre de una enfermedad infecciosa rara. El paciente reporta fiebre y fatiga, mientras que el médico observa un sarpullido y ganglios linfáticos inflamados. El sarpullido y la inflamación de los ganglios se clasifican como:",
+                options: {
+                    a: "Un síndrome, ya que el conjunto de síntomas y signos es característico.",
+                    b: "La etiología de la enfermedad, dada su naturaleza infecciosa.",
+                    c: "Síntomas patognomónicos, ya que son manifestaciones exclusivas.",
+                    d: "Signos clínicos, dado que son manifestaciones objetivas de la enfermedad."
+                },
+                key: "d",
+                feedback: {
+                    correct: "Los **signos clínicos** son manifestaciones objetivas y medibles de una enfermedad que pueden ser observadas por el médico (como un sarpullido o ganglios inflamados). En contraste, los síntomas son subjetivos y reportados por el paciente (como fiebre o fatiga).",
+                    incorrect: [
+                        { opt: "a", reason: "Un síndrome es un *conjunto* de signos y síntomas, no las manifestaciones individuales." },
+                        { opt: "b", reason: "La etiología es la *causa* de la enfermedad (infecciosa), no sus manifestaciones." },
+                        { opt: "c", reason: "Son signos, no síntomas. Además, 'patognomónico' implica una manifestación exclusiva de una enfermedad concreta, lo cual no se afirma en el enunciado." }
+                    ]
+                }
+            },
+            {
+                q: "En una investigación sobre la salud cardiovascular, se descubre que la dieta alta en grasas y el sedentarismo incrementan el riesgo de sufrir un infarto en personas mayores de 40 años. Estos factores se clasifican como:",
+                options: {
+                    a: "Manifestaciones clínicas.",
+                    b: "Factores de riesgo.",
+                    c: "Síntomas reportados.",
+                    d: "Patogénesis."
+                },
+                key: "b",
+                feedback: {
+                    correct: "Un **factor de riesgo** es una característica o exposición (como el sedentarismo o una mala dieta) que aumenta la probabilidad de que un individuo desarrolle una enfermedad o lesión, en este caso, un infarto.",
+                    incorrect: [
+                        { opt: "a", reason: "Las manifestaciones clínicas son el *resultado* de la enfermedad (ej. el dolor de pecho o el infarto), no la causa predisponente." },
+                        { opt: "c", reason: "No son reportes de malestar, sino hábitos o condiciones que preceden a la enfermedad." },
+                        { opt: "d", reason: "La patogénesis es el *mecanismo* por el cual el riesgo se convierte en enfermedad (ej. disfunción endotelial, formación de placa de ateroma), no los factores en sí mismos." }
+                    ]
+                }
+            },
+            {
+                q: "Un paciente diabético desarrolla una lesión renal crónica (nefropatía diabética). ¿Cuál es la relación fisiopatológica entre la hiperglucemia persistente y la glomerulopatía?",
+                options: {
+                    a: "La hiperglucemia causa directamente una acidosis metabólica que daña el tejido renal.",
+                    b: "La glucosa alta (fisiopatología) conduce a una lesión (glomeruloesclerosis) que a su vez causa una nueva fisiopatología (insuficiencia renal).",
+                    c: "La hiperglucemia activa enzimas que reparan el daño renal, pero este proceso se vuelve ineficiente.",
+                    d: "La alteración en el metabolismo de la glucosa provoca una respuesta inflamatoria."
+                },
+                key: "b",
+                feedback: {
+                    correct: "La **hiperglucemia persistente** es la alteración funcional inicial que desencadena la **patogénesis** (glicación, estrés oxidativo) que resultan en **lesión estructural** irreversible (glomeruloesclerosis). Esta lesión se convierte en la nueva **fisiopatología** o estado de **insuficiencia renal**.",
+                    incorrect: [
+                        { opt: "a", reason: "La acidosis metabólica es una *complicación* tardía y no describe la secuencia de lesión estructural. La alteración es primariamente vascular/filtratoria." },
+                        { opt: "c", reason: "La hiperglucemia persistente es primariamente destructiva y dañina, no un proceso de reparación." },
+                        { opt: "d", reason: "La inflamación es *parte* del proceso, pero la opción (b) describe la cascada de la disfunción a la lesión y al fallo orgánico." }
+                    ]
+                }
+            },
+            {
+                q: "¿Cuál es la diferencia fundamental entre el concepto de 'enfermedad' y 'síndrome'?",
+                options: {
+                    a: "Una enfermedad se refiere a la causa, mientras que un síndrome se refiere a las manifestaciones clínicas.",
+                    b: "Una enfermedad tiene una etiología y patogénesis definidas, mientras que un síndrome es un conjunto de signos y síntomas sin una causa única conocida.",
+                    c: "Ambos términos son sinónimos y pueden ser utilizados de forma indistinta.",
+                    d: "Una enfermedad es una condición aguda, mientras que un síndrome es una condición crónica y progresiva."
+                },
+                key: "b",
+                feedback: {
+                    correct: "Una **enfermedad** es una entidad nosológica bien definida (ej. Tuberculosis), con una **etiología** y **patogénesis** conocidas. Un **síndrome** es una agrupación de manifestaciones clínicas que ocurren juntas, pero cuya causa subyacente puede ser diversa, o aún no estar completamente identificada (ej. Síndrome de Sjogren).",
+                    incorrect: [
+                        { opt: "a", reason: "La enfermedad es la *condición*, no solo la causa." },
+                        { opt: "c", reason: "Son conceptos distintos en medicina y fisiopatología." },
+                        { opt: "d", reason: "Ambos pueden ser agudos o crónicos." }
+                    ]
+                }
+            },
+            {
+                q: "Un biomarcador es un indicador biológico medible utilizado en la práctica clínica. ¿Cuál de las siguientes opciones describe el papel de un biomarcador de diagnóstico y pronóstico?",
+                options: {
+                    a: "Sirve para la detección de enfermedades en su etapa terminal.",
+                    b: "Proporciona información para confirmar la enfermedad y predecir su evolución.",
+                    c: "Se usa únicamente para evaluar el riesgo de aparición de una patología.",
+                    d: "Es una señal exclusiva de la recuperación completa del paciente."
+                },
+                key: "b",
+                feedback: {
+                    correct: "Los biomarcadores son esenciales para el **diagnóstico** (confirman la presencia o ausencia de la enfermedad) y el **pronóstico** (indican la probabilidad de progresión, respuesta al tratamiento o supervivencia) de la enfermedad.",
+                    incorrect: [
+                        { opt: "a", reason: "Son más valiosos en etapas tempranas o intermedias, no solo terminales." },
+                        { opt: "c", reason: "Esta es la función de un **biomarcador de riesgo**." },
+                        { opt: "d", reason: "Esto sería un **biomarcador de respuesta o monitoreo**." }
+                    ]
+                }
+            },
+            {
+                q: "Un paciente con anemia crónica presenta una reducción en la producción de glóbulos rojos. Se le realiza un estudio para identificar la causa subyacente. ¿Qué mecanismo fisiopatológico es más probable que contribuya a la anemia?",
+                options: {
+                    a: "Un aumento significativo en la producción de eritropoyetina.",
+                    b: "Una reducción en la producción de eritropoyetina, una hormona que regula la producción de glóbulos rojos.",
+                    c: "Una alteración en la absorción de hierro que aumenta los depósitos en el bazo.",
+                    d: "Un aumento en la destrucción de glóbulos rojos."
+                },
+                key: "b",
+                feedback: {
+                    correct: "La **eritropoyetina (EPO)** es crucial para estimular la producción de glóbulos rojos. Su deficiencia (típica en la enfermedad renal crónica) es una causa directa de anemia por **hipoproliferación** o reducción de la producción medular.",
+                    incorrect: [
+                        { opt: "a", reason: "Un aumento de EPO intentaría *corregir* la anemia, no causarla." },
+                        { opt: "c", reason: "Aunque la alteración en la absorción de hierro causa problemas de producción, la deficiencia de EPO es un mecanismo hormonal directo y principal para las anemias de producción reducida." },
+                        { opt: "d", reason: "Este es el mecanismo de la **anemia hemolítica** (destrucción aumentada), lo opuesto a la anemia por producción reducida." }
+                    ]
+                }
+            },
+            {
+                q: "En la fisiopatología del cáncer, ¿cuál de los siguientes procesos describe la capacidad de las células cancerosas para evadir la muerte celular programada?",
+                options: {
+                    a: "Una reacción inflamatoria crónica.",
+                    b: "Una mutación en los genes que regulan la división celular.",
+                    c: "La apoptosis, que es la muerte celular programada y se inhibe en las células malignas.",
+                    d: "La necrosis, que se caracteriza por la muerte celular accidental."
+                },
+                key: "c",
+                feedback: {
+                    correct: "La **apoptosis** es el mecanismo de muerte celular programada que el organismo utiliza para eliminar células dañadas. Una de las características distintivas del cáncer es la capacidad de las células malignas para **inhibir o evadir la apoptosis**, permitiéndoles sobrevivir indefinidamente y proliferar.",
+                    incorrect: [
+                        { opt: "a", reason: "La inflamación crónica es un factor que *promueve* el cáncer, pero no el mecanismo de evasión de la muerte celular." },
+                        { opt: "b", reason: "La mutación es la **causa genética** de la evasión, no el nombre del proceso celular evadido." },
+                        { opt: "d", reason: "La necrosis es una muerte celular accidental o traumática, no el proceso regulado que se inhibe." }
+                    ]
+                }
+            },
+            {
+                q: "Un paciente tiene un diagnóstico de diabetes. La confirmación del diagnóstico mediante un análisis de sangre se basa en la etiología de la enfermedad. ¿Cuál de las siguientes afirmaciones describe la relación entre etiología y diagnóstico?",
+                options: {
+                    a: "El diagnóstico se basa únicamente en los síntomas, sin relación con la etiología.",
+                    b: "La etiología (diabetes) es la causa subyacente que el diagnóstico confirma al detectar las alteraciones metabólicas.",
+                    c: "La etiología no se relaciona con la patogénesis, ya que son procesos independientes.",
+                    d: "La etiología y el diagnóstico son sinónimos, refiriéndose ambos al mismo concepto."
+                },
+                key: "b",
+                feedback: {
+                    correct: "La **etiología** (la causa) inicia la **patogénesis** (las alteraciones metabólicas como la hiperglucemia). El diagnóstico se basa en la detección objetiva y medible de las alteraciones que resultan de la patogénesis, lo que a su vez confirma la existencia de la condición causada por dicha etiología.",
+                    incorrect: [
+                        { opt: "a", reason: "El diagnóstico de diabetes requiere análisis de laboratorio (glucemia, HbA1c)." },
+                        { opt: "c", reason: "Es incorrecto; la etiología siempre desencadena la patogénesis." },
+                        { opt: "d", reason: "Son conceptos distintos; uno es la causa y el otro es la identificación de la condición." }
+                    ]
+                }
+            },
+            {
+                q: "En la patología de la fibrosis pulmonar, ¿qué mecanismo fisiopatológico conduce a una disminución de la función pulmonar?",
+                options: {
+                    a: "Una respuesta inflamatoria aguda.",
+                    b: "La hiperplasia de las células epiteliales.",
+                    c: "La formación de un tejido cicatricial que altera la elasticidad y el intercambio gaseoso.",
+                    d: "La reducción de la presión arterial que colapsa los alvéolos."
+                },
+                key: "c",
+                feedback: {
+                    correct: "La **fibrosis pulmonar** se caracteriza por la acumulación excesiva de **tejido cicatricial** (colágeno) en el intersticio. Este tejido es rígido e inelástico, lo que provoca un patrón restrictivo (dificultad para expandir el pulmón) y engrosamiento de la membrana alveolocapilar, dificultando el intercambio gaseoso.",
+                    incorrect: [
+                        { opt: "a", reason: "La fibrosis es el resultado final de una inflamación típicamente crónica o recurrente." },
+                        { opt: "b", reason: "Si bien hay remodelación, el factor funcional clave es la rigidez por el tejido cicatricial." },
+                        { opt: "d", reason: "Esta es una condición hemodinámica (hipotensión), no el mecanismo principal de la restricción y el fallo de la difusión." }
+                    ]
+                }
+            },
+            {
+                q: "En la medicina de precisión, un médico utiliza información genética para seleccionar el tratamiento más efectivo para un paciente con cáncer. ¿Cuál es la principal justificación para este enfoque?",
+                options: {
+                    a: "Solo permite el tratamiento de enfermedades raras que no tienen otras opciones.",
+                    b: "No es relevante para el tratamiento del cáncer, solo para el diagnóstico.",
+                    c: "Asegura que el tratamiento sea el mismo para todos los pacientes con el mismo tipo de cáncer.",
+                    d: "Permite seleccionar terapias dirigidas que actúan sobre las mutaciones genéticas específicas de los tumores."
+                },
+                key: "d",
+                feedback: {
+                    correct: "La medicina de precisión se fundamenta en la idea de que los tumores son únicos a nivel molecular. Al identificar las mutaciones específicas, se pueden usar **terapias dirigidas** diseñadas para bloquear esa vía molecular, maximizando la eficacia y minimizando los efectos secundarios.",
+                    incorrect: [
+                        { opt: "a", reason: "Se usa ampliamente en cáncer, una enfermedad común." },
+                        { opt: "b", reason: "Es el opuesto a la justificación; es vital para la terapéutica." },
+                        { opt: "c", reason: "Es lo contrario, busca **personalizar** el tratamiento." }
+                    ]
+                }
+            },
+            {
+                q: "Un paciente con diagnóstico de diabetes tipo 2 presenta un alto nivel de glucemia en ayunas y hemoglobina glucosilada (HbA1c). ¿Qué tipo de biomarcador son estos?",
+                options: {
+                    a: "Biomarcadores de riesgo.",
+                    b: "Biomarcadores de diagnóstico y pronóstico.",
+                    c: "Biomarcadores de tratamiento exclusivamente.",
+                    d: "Biomarcadores de detección."
+                },
+                key: "b",
+                feedback: {
+                    correct: "La glucemia se utiliza para **diagnosticar** la diabetes. La **HbA1c** refleja el control glucémico promedio, siendo clave para el **pronóstico** (riesgo de complicaciones) y el diagnóstico.",
+                    incorrect: [
+                        { opt: "a", reason: "Estos se usarían antes del diagnóstico, como el índice de masa corporal (IMC) o marcadores genéticos." },
+                        { opt: "c", reason: "Aunque se usan para monitorear el tratamiento, la principal función clínica es diagnóstica/pronóstica." },
+                        { opt: "d", reason: "La detección es una fase previa; estos niveles confirman la enfermedad." }
+                    ]
+                }
+            },
+            {
+                q: "¿Cuál es el principal desafío ético en el desarrollo de la medicina de precisión?",
+                options: {
+                    a: "El alto costo de los tratamientos, sin implicaciones éticas.",
+                    b: "La privacidad de los datos genéticos y el acceso equitativo a los tratamientos avanzados.",
+                    c: "La necesidad de realizar una biopsia de tejido para obtener la muestra.",
+                    d: "El uso de modelos animales en la investigación preclínica."
+                },
+                key: "b",
+                feedback: {
+                    correct: "La medicina de precisión genera un enorme volumen de datos genéticos sensibles, lo que plantea un riesgo de **privacidad** y discriminación. Además, el alto costo genera una preocupación ética fundamental sobre la **equidad** y el acceso.",
+                    incorrect: [
+                        { opt: "a", reason: "Es una preocupación pragmática, pero la privacidad y la equidad son los dilemas éticos fundamentales." },
+                        { opt: "c", reason: "Es un desafío técnico o clínico, no un dilema ético." },
+                        { opt: "d", reason: "Es un desafío ético general en investigación biomédica, no exclusivo de la medicina de precisión." }
+                    ]
+                }
+            },
+            {
+                q: "En el estudio de la anemia, se considera la 'morbidez'. ¿Cuál de las siguientes opciones define con mayor precisión este concepto?",
+                options: {
+                    a: "El número de casos nuevos de anemia en una población durante un período de tiempo.",
+                    b: "Es la tasa de enfermedad en una población, refiriéndose a la frecuencia con la que ocurre una patología.",
+                    c: "El número de muertes causadas por la anemia en una población.",
+                    d: "La frecuencia de una enfermedad solo en pacientes hospitalizados."
+                },
+                key: "b",
+                feedback: {
+                    correct: "La **morbidez** es un término epidemiológico que se refiere a la **enfermedad o estado de enfermedad** en una población, expresado como una tasa o frecuencia (tasa de prevalencia o incidencia).",
+                    incorrect: [
+                        { opt: "a", reason: "Es la definición de **Incidencia**." },
+                        { opt: "c", reason: "Es la definición de **Mortalidad**." },
+                        { opt: "d", reason: "Aunque es similar a la prevalencia, la opción (b) utiliza el término 'tasa de enfermedad' que es más preciso en el contexto epidemiológico general." }
+                    ]
+                }
+            },
+            {
+                q: "La fisiopatología se integra con la bioinformática para el análisis de grandes volúmenes de datos. ¿Cuál es el principal beneficio de esta integración para la investigación biomédica?",
+                options: {
+                    a: "Permite el análisis de grandes volúmenes de datos para identificar nuevas vías patológicas y dianas terapéuticas.",
+                    b: "Se utiliza solo para la gestión de los datos de los pacientes en el hospital.",
+                    c: "Ambas disciplinas son incompatibles y se estudian de forma separada.",
+                    d: "Se limita al estudio de las enfermedades raras y genéticas."
+                },
+                key: "a",
+                feedback: {
+                    correct: "La **bioinformática** proporciona las herramientas computacionales para analizar datos 'ómicos' (genómica, proteómica) que son inmanejables manualmente. Esta capacidad es crucial para que la fisiopatología moderna descubra las bases moleculares de las enfermedades (vías patológicas) y proponga nuevos blancos para fármacos (dianas terapéuticas).",
+                    incorrect: [
+                        { opt: "b", reason: "La gestión es parte del proceso, pero la identificación de vías/dianas es el beneficio principal para la investigación." },
+                        { opt: "c", reason: "Es incorrecto, son altamente sinérgicas." },
+                        { opt: "d", reason: "La fisiopatología se beneficia enormemente de la información molecular procesada por la bioinformática en todas las enfermedades." }
+                    ]
+                }
+            },
+            {
+                q: "En el contexto de las enfermedades, la 'etiología' es el factor que causa o desencadena una patología. En la diabetes, la etiología puede ser multifactorial. ¿Qué significa esto?",
+                options: {
+                    a: "La enfermedad es causada por un solo factor genético dominante.",
+                    b: "La enfermedad es causada por la combinación de múltiples factores, como la genética y el estilo de vida.",
+                    c: "La enfermedad no tiene una causa conocida, por lo que se asume que es múltiple.",
+                    d: "Si se elimina un único factor (ej. dieta), la enfermedad desaparece."
+                },
+                key: "b",
+                feedback: {
+                    correct: "Una **etiología multifactorial** implica que una enfermedad es el resultado de la interacción de diversos factores, que a menudo incluyen una predisposición **genética** (interna) y factores **ambientales/de comportamiento** (externos) como la dieta y el sedentarismo.",
+                    incorrect: [
+                        { opt: "a", reason: "Esto sería una enfermedad monogénica." },
+                        { opt: "c", reason: "Esto es una enfermedad idiopática." },
+                        { opt: "d", reason: "La eliminación de un solo factor en enfermedades complejas raramente elimina la enfermedad por completo." }
+                    ]
+                }
+            },
+            {
+                q: "¿Cuál de las siguientes opciones describe el concepto de 'etiología' en el contexto de la fisiopatología?",
+                options: {
+                    a: "La progresión y evolución de la enfermedad a nivel celular.",
+                    b: "Es el estudio de la causa o el origen de la enfermedad y los factores que la provocan.",
+                    c: "Las manifestaciones clínicas que presenta el paciente.",
+                    d: "La prevención de enfermedades en una población."
+                },
+                key: "b",
+                feedback: {
+                    correct: "La **etiología** es la rama de la fisiopatología y la medicina que se enfoca en el estudio de las **causas** o los **orígenes** de las enfermedades, incluyendo los factores predisponentes.",
+                    incorrect: [
+                        { opt: "a", reason: "Esto es la **Patogénesis**." },
+                        { opt: "c", reason: "Esto es la **Clínica o Semiología**." },
+                        { opt: "d", reason: "Esto es **Medicina Preventiva**." }
+                    ]
+                }
+            },
+            {
+                q: "Un paciente presenta un conjunto de signos y síntomas que no se ajustan a un diagnóstico específico, pero que sugieren la presencia de una enfermedad. Este conjunto se clasifica como:",
+                options: {
+                    a: "Una enfermedad.",
+                    b: "Un síndrome.",
+                    c: "Una patología.",
+                    d: "Una manifestación clínica."
+                },
+                key: "b",
+                feedback: {
+                    correct: "Un **síndrome** es, por definición, una agrupación de **signos y síntomas** que se presentan de forma recurrente y sugieren la presencia de una enfermedad o condición, a menudo antes de que se establezca una etiología única o un diagnóstico definitivo.",
+                    incorrect: [
+                        { opt: "a", reason: "Implica una etiología/patogénesis más definida." },
+                        { opt: "c", reason: "Es un término general para referirse a una enfermedad." },
+                        { opt: "d", reason: "Es una sola manifestación, no el conjunto." }
+                    ]
+                }
+            },
+            {
+                q: "En el desarrollo de un nuevo fármaco, el conocimiento de la fisiopatología es crucial. ¿Cuál es la principal ventaja de este conocimiento para el diseño de nuevas terapias?",
+                options: {
+                    a: "Permite desarrollar terapias que abordan la causa subyacente de la enfermedad en lugar de solo aliviar los síntomas.",
+                    b: "Se utiliza solo para la validación de terapias que ya han sido aprobadas.",
+                    c: "Se aplica exclusivamente en el estudio de enfermedades crónicas.",
+                    d: "Su influencia en el diseño de nuevas terapias es marginal."
+                },
+                key: "a",
+                feedback: {
+                    correct: "El entendimiento del mecanismo de la enfermedad (**patogénesis**) permite a los científicos diseñar fármacos que interrumpan la vía patológica en su origen (terapias causales/dirigidas), en contraste con el alivio sintomático (tratamiento paliativo).",
+                    incorrect: [
+                        { opt: "b", reason: "Eso es farmacovigilancia o reevaluación." },
+                        { opt: "c", reason: "Es vital para todas las enfermedades." },
+                        { opt: "d", reason: "Es la base de la terapéutica moderna." }
+                    ]
+                }
+            },
+            {
+                q: "Un paciente con diagnóstico de diabetes tipo 2 presenta un aumento en la presión arterial y la excreción de proteínas en la orina. Estos hallazgos sugieren una alteración en la función renal. ¿Cuál es la relación fisiopatológica entre la diabetes y la nefropatía?",
+                options: {
+                    a: "La diabetes causa directamente una inflamación crónica del parénquima renal.",
+                    b: "La diabetes no se relaciona con la presión arterial, solo con el nivel de glucosa.",
+                    c: "La fisiopatología de la diabetes afecta la vasculatura renal, lo que resulta en daño estructural y funcional en los riñones.",
+                    d: "La alteración es solo la incapacidad del riñón para filtrar las toxinas."
+                },
+                key: "c",
+                feedback: {
+                    correct: "La **nefropatía diabética** es una microangiopatía. La hiperglucemia crónica daña los vasos sanguíneos pequeños del glomérulo (la unidad de filtración), causando engrosamiento de la membrana basal y glomeruloesclerosis. Este daño estructural y funcional se manifiesta inicialmente como **proteinuria** y se asocia frecuentemente con **hipertensión**.",
+                    incorrect: [
+                        { opt: "a", reason: "Si bien la inflamación es parte, el mecanismo principal es la alteración estructural vascular." },
+                        { opt: "b", reason: "Es incorrecto; la hipertensión es un factor clave en la progresión." },
+                        { opt: "d", reason: "Esta es una complicación tardía (**insuficiencia renal**), no el mecanismo inicial que causa la proteinuria." }
+                    ]
+                }
+            },
+            {
+                q: "¿Cuál es el principal aporte de la fisiopatología en la prevención de enfermedades a nivel poblacional?",
+                options: {
+                    a: "Identifica los factores de riesgo y los mecanismos celulares y moleculares iniciales que desencadenan las patologías.",
+                    b: "Se enfoca exclusivamente en la curación de las enfermedades infecciosas.",
+                    c: "Desarrollar y distribuir nuevos medicamentos de forma masiva.",
+                    d: "Gestión logística de los recursos de salud pública."
+                },
+                key: "a",
+                feedback: {
+                    correct: "Para prevenir eficazmente una enfermedad, es fundamental conocer qué la causa (**factores de riesgo**) y cómo comienza a nivel biológico (**mecanismos iniciales**). La fisiopatología proporciona este conocimiento, permitiendo el desarrollo de estrategias de prevención primarias y secundarias.",
+                    incorrect: [
+                        { opt: "b", reason: "Se enfoca en el entendimiento de la enfermedad, no solo en la curación." },
+                        { opt: "c", reason: "Es la función de la farmacología e industria." },
+                        { opt: "d", reason: "Es la función de la administración de salud." }
+                    ]
+                }
+            },
+            {
+                q: "En la investigación, se utilizan 'modelos animales' para el estudio de enfermedades. ¿Cuál es el beneficio de la fisiopatología en este contexto?",
+                options: {
+                    a: "Replica la enfermedad de manera idéntica a la condición humana.",
+                    b: "Es irrelevante, ya que la fisiopatología se enfoca solo en humanos.",
+                    c: "Proporciona un marco para entender los mecanismos de la enfermedad y probar terapias potenciales de forma preclínica.",
+                    d: "Se limita al estudio de enfermedades raras y huérfanas."
+                },
+                key: "c",
+                feedback: {
+                    correct: "Los modelos animales replican aspectos de la **patogénesis** humana, permitiendo a los fisiopatólogos desentrañar los mecanismos complejos de la enfermedad. Esto es crucial para la fase **preclínica**, donde se evalúan la seguridad y eficacia de nuevas terapias antes de los ensayos en humanos.",
+                    incorrect: [
+                        { opt: "a", reason: "Es raro que un modelo animal sea idéntico a la enfermedad humana; son modelos aproximados." },
+                        { opt: "b", reason: "Es incorrecto; la fisiopatología es central para el uso de modelos animales." },
+                        { opt: "d", reason: "Se usa en el estudio de patologías comunes y raras." }
+                    ]
+                }
+            },
+            {
+                q: "La 'medicina traslacional' es un concepto que se relaciona con la fisiopatología. ¿Cuál de las siguientes afirmaciones describe mejor esta relación?",
+                options: {
+                    a: "Se refiere únicamente al uso de modelos computacionales para el diagnóstico.",
+                    b: "Describe el proceso de llevar los descubrimientos de la investigación básica directamente a la práctica clínica.",
+                    c: "Es el proceso burocrático para la aprobación de nuevos tratamientos.",
+                    d: "Se refiere a la evolución histórica de la medicina a lo largo de los siglos."
+                },
+                key: "b",
+                feedback: {
+                    correct: "La **medicina traslacional** (del laboratorio a la cabecera del paciente) busca cerrar la brecha entre la investigación fundamental (donde se descubren los **mecanismos fisiopatológicos**) y su aplicación práctica en el diagnóstico, pronóstico y tratamiento de los pacientes.",
+                    incorrect: [
+                        { opt: "a", reason: "Esto es bioinformática o modelado." },
+                        { opt: "c", reason: "Es incorrecto, es un concepto de investigación y desarrollo." },
+                        { opt: "d", reason: "Es la historia de la medicina." }
+                    ]
+                }
+            },
+            {
+                q: "En la fisiopatología del sistema renal, ¿cuál es la principal función de los riñones y qué alteración conduce a la enfermedad renal crónica?",
+                options: {
+                    a: "La principal función es el filtrado de la sangre, y la alteración conduce a una reducción en la excreción de toxinas.",
+                    b: "La principal función es la producción de eritropoyetina, y su reducción conduce a la alteración renal.",
+                    c: "La principal función es la regulación del metabolismo de carbohidratos, y la alteración conduce a la diabetes.",
+                    d: "La principal función es la formación de cálculos renales, y su alteración conduce a la enfermedad."
+                },
+                key: "a",
+                feedback: {
+                    correct: "La función esencial de los riñones es el **filtrado glomerular** de la sangre para mantener la homeostasis. La **Enfermedad Renal Crónica (ERC)** implica una pérdida progresiva de nefronas, lo que reduce la capacidad de filtración y, en última instancia, lleva a la acumulación de desechos nitrogenados y otras **toxinas** (**uremia/azotemia**).",
+                    incorrect: [
+                        { opt: "b", reason: "La producción de EPO es una consecuencia hormonal de la ERC, pero no el mecanismo definitorio de la insuficiencia renal per se (que es la falla en el filtrado)." },
+                        { opt: "c", reason: "Es una función parcial del riñón; el filtrado y la homeostasis son las principales." },
+                        { opt: "d", reason: "La formación de cálculos renales es una patología obstructiva diferente (nefrolitiasis)." }
+                    ]
+                }
+            },
+            {
+                q: "La 'patogénesis' es un concepto clave en la fisiopatología. ¿Cuál de las siguientes opciones describe con mayor precisión este concepto?",
+                options: {
+                    a: "El origen o la causa principal de la enfermedad.",
+                    b: "El desarrollo y la progresión de la enfermedad a nivel celular y molecular.",
+                    c: "Los síntomas y las manifestaciones clínicas de la enfermedad.",
+                    d: "El tratamiento de la enfermedad."
+                },
+                key: "b",
+                feedback: {
+                    correct: "La **patogénesis** describe la secuencia de eventos biológicos, celulares, y moleculares que ocurren desde el momento del estímulo inicial (**etiología**) hasta la manifestación completa de la enfermedad. Es el **cómo** la enfermedad se desarrolla.",
+                    incorrect: [
+                        { opt: "a", reason: "Esto es la **Etiología**." },
+                        { opt: "c", reason: "Esto es la **Clínica**." },
+                        { opt: "d", reason: "Esto es la **Terapéutica**." }
+                    ]
+                }
+            },
+            {
+                q: "¿Cuál es el principal valor de la integración de la fisiopatología con la bioinformática en la investigación?",
+                options: {
+                    a: "Permite el análisis de grandes volúmenes de datos para identificar nuevas vías patológicas y dianas terapéuticas.",
+                    b: "Se utiliza solo para la gestión de los datos de los pacientes en el hospital.",
+                    c: "Ambas disciplinas son incompatibles y se estudian de forma separada.",
+                    d: "Se limita al estudio de las enfermedades raras y genéticas."
+                },
+                key: "a",
+                feedback: {
+                    correct: "La **bioinformática** provee la escala necesaria para el análisis de los macrodatos genómicos y proteómicos, permitiendo a la fisiopatología identificar los mecanismos de enfermedad no evidentes mediante la experimentación tradicional.",
+                    incorrect: [
+                        { opt: "b", reason: "La gestión es parte del proceso, pero la identificación de vías/dianas es el beneficio principal para la investigación." },
+                        { opt: "c", reason: "Es incorrecto, son altamente sinérgicas." },
+                        { opt: "d", reason: "La fisiopatología se beneficia enormemente de la información molecular procesada por la bioinformática en todas las enfermedades." }
+                    ]
+                }
+            },
+            {
+                q: "¿Qué papel desempeña la fisiopatología en la medicina de precisión para el tratamiento de enfermedades?",
+                options: {
+                    a: "Promueve terapias estándar y uniformes para todos los pacientes.",
+                    b: "Se limita al estudio de las enfermedades infecciosas.",
+                    c: "Proporciona la base científica para personalizar los tratamientos según las características moleculares de un paciente.",
+                    d: "Permite la prescripción de medicamentos sin un diagnóstico clínico preciso."
+                },
+                key: "c",
+                feedback: {
+                    correct: "La **fisiopatología** explica qué moléculas o vías están alteradas en un paciente específico. Este conocimiento es la base para la **medicina de precisión**, ya que permite seleccionar terapias dirigidas exactamente a la alteración molecular de ese individuo, logrando la **personalización**.",
+                    incorrect: [
+                        { opt: "a", reason: "Opuesto al concepto de personalización." },
+                        { opt: "b", reason: "Se aplica ampliamente en cáncer, enfermedades autoinmunes y crónicas." },
+                        { opt: "d", reason: "Esto es un error médico grave." }
+                    ]
+                }
+            },
+            {
+                q: "Un paciente con diagnóstico de diabetes tipo 2 presenta un alto nivel de glucemia en ayunas. El médico le receta metformina. ¿Cuál es el papel del médico en el tratamiento, desde una perspectiva de la fisiopatología?",
+                options: {
+                    a: "El médico se limita a prescribir la droga más común sin considerar el mecanismo.",
+                    b: "El médico evalúa los síntomas, diagnostica y prescribe la primera opción de tratamiento.",
+                    c: "El médico tiene la responsabilidad de comprender la etiología y patogénesis de la enfermedad para seleccionar el tratamiento más efectivo.",
+                    d: "El médico se encarga de la gestión de la información financiera del tratamiento."
+                },
+                key: "c",
+                feedback: {
+                    correct: "El médico elige el tratamiento con base en el conocimiento de la **patogénesis**. La Metformina, por ejemplo, se elige porque actúa reduciendo la producción hepática de glucosa y mejorando la sensibilidad a la insulina (**mecanismos patogénicos clave**). Esta elección racional requiere la comprensión fisiopatológica.",
+                    incorrect: [
+                        { opt: "a", reason: "Esto es contrario a la práctica médica basada en la evidencia." },
+                        { opt: "b", reason: "Es correcto, pero la opción (c) enfatiza el rol intelectual que exige la fisiopatología." },
+                        { opt: "d", reason: "Es una función administrativa, no la función terapéutica fundamental." }
+                    ]
+                }
+            },
+            {
+                q: "¿Cuál es la contribución más significativa de la fisiopatología a la salud pública?",
+                options: {
+                    a: "Se enfoca en la investigación de enfermedades genéticas raras a nivel mundial.",
+                    b: "No tiene relación con la salud pública, solo con la clínica individual.",
+                    c: "Proporciona un marco científico y conceptual para entender el comportamiento de las enfermedades a nivel de la población.",
+                    d: "Se encarga de la gestión y distribución de vacunas."
+                },
+                key: "c",
+                feedback: {
+                    correct: "La **fisiopatología** define los **mecanismos subyacentes** que permiten a la salud pública comprender por qué ciertos factores de riesgo o exposiciones resultan en enfermedad, guiando así las intervenciones, la epidemiología y las políticas de **prevención poblacionales**.",
+                    incorrect: [
+                        { opt: "a", reason: "Es demasiado específico; se aplica a enfermedades comunes y raras." },
+                        { opt: "b", reason: "Es incorrecto, ya que es fundamental para la prevención." },
+                        { opt: "d", reason: "Esto es administración sanitaria." }
+                    ]
+                }
+            },
+            {
+                q: "En el contexto de la fisiopatología, ¿cuál de las siguientes opciones describe el concepto de 'fisiopatología' de manera precisa?",
+                options: {
+                    a: "Es la rama de la medicina que estudia las alteraciones físicas y químicas de los procesos biológicos en organismos vivos.",
+                    b: "Es el estudio de las enfermedades degenerativas y crónicas exclusivamente.",
+                    c: "Es la anatomía y la fisiología normal del cuerpo humano.",
+                    d: "Es el estudio de la enfermedad sin considerar sus mecanismos de desarrollo."
+                },
+                key: "a",
+                feedback: {
+                    correct: "La **fisiopatología** es el estudio de **cómo la enfermedad modifica la función normal** (**fisiología**), centrándose en los cambios funcionales, químicos y estructurales inducidos por la patología.",
+                    incorrect: [
+                        { opt: "b", reason: "Se aplica a todas las enfermedades." },
+                        { opt: "c", reason: "Esto es la Anatomía y la Fisiología (normales), no la fisiopatología." },
+                        { opt: "d", reason: "Es incorrecto; la fisiopatología se centra en los mecanismos de desarrollo (**patogénesis**)." }
+                    ]
+                }
+            }
+        ];
+
+        let currentPage = 0;
+        const totalPages = questionsData.length;
+        const pagesWrapper = document.getElementById('pages-wrapper');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const pageIndicator = document.getElementById('page-indicator');
+
+        // Función para actualizar los controles de navegación
+        function updateControls() {
+            prevBtn.disabled = currentPage === 0;
+            nextBtn.disabled = currentPage === totalPages - 1;
+            pageIndicator.textContent = `Página ${currentPage + 1} de ${totalPages}`;
+        }
+
+        // Función para mover la "página" (carrusel)
+        function goToPage(pageIndex) {
+            currentPage = Math.max(0, Math.min(pageIndex, totalPages - 1));
+            const offset = -currentPage * 100;
+            pagesWrapper.style.transform = `translateX(${offset}%)`;
+            updateControls();
+        }
+
+        // Lógica para el acordeón (Toggle Functionality)
+        function setupAccordion(index) {
+            const button = document.getElementById(`toggle-btn-${index}`);
+            if (button) {
+                button.addEventListener('click', function() {
+                    const content = document.getElementById(`feedback-collapse-${index}`);
+                    const icon = document.getElementById(`toggle-icon-${index}`);
+                    const textSpan = document.getElementById(`toggle-text-${index}`);
+
+                    if (content.classList.contains('hidden')) {
+                        // Desplegar contenido
+                        content.classList.remove('hidden');
+                        icon.classList.add('rotate-180');
+                        textSpan.textContent = 'Ocultar Análisis Completo';
+                    } else {
+                        // Contraer contenido
+                        content.classList.add('hidden');
+                        icon.classList.remove('rotate-180');
+                        textSpan.textContent = 'Ver Argumento y Análisis Completo';
+                    }
+                });
+            }
+        }
+
+
+        // Función para renderizar el contenido
+        function renderQuestions() {
+            questionsData.forEach((data, index) => {
+                const pageItem = document.createElement('div');
+                pageItem.className = 'page-item content-block'; 
+                
+                // Mapeo para generar las opciones
+                const optionsHTML = Object.keys(data.options).map(key => {
+                    const isKey = key === data.key;
+                    let optionClass = 'block text-lg p-2 rounded-md transition-all duration-300';
+                    let optionIcon = '';
+
+                    if (isKey) {
+                        optionClass += ' bg-green-50 text-green-800 font-bold border-2 border-green-600';
+                        optionIcon = '<span class="text-green-600 font-extrabold mr-2">✅ Correcto:</span>';
+                    } else {
+                        optionClass += ' text-gray-700 bg-gray-100 hover:bg-gray-200';
+                        optionIcon = '<span class="text-black font-extrabold mr-2 uppercase">' + key + ')</span>';
+                    }
+
+                    return `<li class="${optionClass}">${optionIcon}${data.options[key]}</li>`;
+                }).join('');
+
+                // Mapeo para generar los argumentos incorrectos
+                const incorrectFeedbackHTML = data.feedback.incorrect.map(item => {
+                    return `
+                        <div class="mb-3 p-3 bg-red-50 border-l-4 border-red-500 rounded-md">
+                            <p class="font-bold text-red-800 italic">Opción ${item.opt}) <span class="text-sm">(Incorrecta)</span></p>
+                            <p class="text-base text-red-700 mt-1">${item.reason}</p>
+                        </div>
+                    `;
+                }).join('');
+
+                pageItem.innerHTML = `
+                    <!-- Título de la pregunta al estilo de artículo de libro, con numeración destacada -->
+                    <div class="flex items-start mb-4 border-b pb-4">
+                        <span class="text-4xl font-extrabold larousse-text-red mr-4 mt-1 leading-none">${index + 1}</span>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900 tracking-tight">Pregunta de la Unidad</h3>
+                            <p class="text-lg font-medium text-gray-600 italic">Concepto a Debatir</p>
+                        </div>
+                    </div>
+
+                    <!-- Enunciado y Opciones -->
+                    <div class="mb-6 ml-12">
+                        <p class="text-xl font-medium text-gray-800 mb-4 border-l-4 border-gray-400 pl-4">${data.q}</p>
+                        <ul class="space-y-3">
+                            ${optionsHTML}
+                        </ul>
+                    </div>
+
+                    <!-- Botón/Trigger para el acordeón (interactivo) -->
+                    <button id="toggle-btn-${index}" class="mt-4 ml-12 w-full sm:w-fit flex items-center justify-between p-3 text-lg font-bold rounded-lg larousse-text-red bg-red-50 hover:bg-red-100 transition duration-150 shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50">
+                        <span id="toggle-text-${index}">Ver Argumento y Análisis Completo</span>
+                        <!-- Icono SVG para indicar el estado (flecha) -->
+                        <svg id="toggle-icon-${index}" class="w-5 h-5 ml-2 transition-transform duration-300 transform rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+
+                    <!-- Contenedor Plegable (Oculto por defecto) -->
+                    <div id="feedback-collapse-${index}" class="hidden">
+                        <div class="border-t-2 border-gray-300 pt-6 ml-12">
+                            <!-- Argumento Correcto -->
+                            <div class="mb-6 p-4 bg-green-100 border-l-4 border-green-600 rounded-lg">
+                                <h4 class="text-xl font-bold text-green-900 mb-2">✅ Argumento Fundamental (Respuesta ${data.key.toUpperCase()})</h4>
+                                <p class="text-lg text-green-900">${data.feedback.correct}</p>
+                            </div>
+                            
+                            <!-- Sección de Opciones Incorrectas -->
+                            <div class="p-4 bg-red-100 rounded-lg">
+                                <h4 class="text-xl font-bold text-red-900 mb-3">❌ Por qué las Otras Opciones son Incorrectas (Dime si es Falso)</h4>
+                                ${incorrectFeedbackHTML}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                pagesWrapper.appendChild(pageItem);
+                
+                // Configurar el acordeón después de renderizar el elemento
+                setTimeout(() => setupAccordion(index), 0);
+            });
+
+            // Configurar manejadores de eventos y estado inicial
+            prevBtn.addEventListener('click', () => goToPage(currentPage - 1));
+            nextBtn.addEventListener('click', () => goToPage(currentPage + 1));
+            goToPage(currentPage); // Mostrar la primera página al cargar
+        }
+
+        window.onload = renderQuestions;
+    </script>
+</body>
+</html>
