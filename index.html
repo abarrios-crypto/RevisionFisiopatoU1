@@ -26,6 +26,7 @@
             min-height: 70vh; /* Asegura que la "página" tenga altura */
             position: relative;
             overflow: hidden; /* Oculta las páginas que no se muestran */
+            margin-bottom: 60px; /* Espacio para el footer fijo */
         }
         /* Contenedor de las páginas: permite desplazamiento horizontal */
         #pages-wrapper {
@@ -46,6 +47,22 @@
             border: none;
             padding-top: 1.5rem;
             padding-bottom: 1.5rem;
+        }
+
+        /* Estilo para el Footer Fijo */
+        .fixed-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #374151; /* Gris oscuro para alto contraste */
+            color: white;
+            padding: 0.75rem 0; /* Espaciado vertical */
+            text-align: center;
+            font-size: 0.875rem; /* Pequeño para no invadir */
+            font-weight: 500;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
         }
     </style>
 </head>
@@ -88,6 +105,11 @@
         </div>
 
     </div>
+
+    <!-- FOOTER FIJO DE AUTORÍA -->
+    <footer class="fixed-footer">
+        © 2025 | Adriana A. Barrios Rodríguez | Fisiopatología
+    </footer>
 
     <script>
         // Definición de datos con argumentos completos, clave y opciones
